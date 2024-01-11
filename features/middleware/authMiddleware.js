@@ -12,7 +12,7 @@ export const authMiddleware = (req, res, next) => {
   try {
     const { username, id } = jwt.verify(token, process.env.TOKEN_SCRETE);
 
-    if (id) {
+    if (username && id) {
       req.username = username;
       req.id = id;
       next();

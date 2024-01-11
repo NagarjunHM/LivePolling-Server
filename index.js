@@ -7,6 +7,7 @@ import userRoute from "./features/user/userRouter.js";
 import { errorMiddlware } from "./features/middleware/errorHandlerMiddleware.js";
 import cookieParser from "cookie-parser";
 import { authMiddleware } from "./features/middleware/authMiddleware.js";
+import pollRoute from "./features/poll/pollRouter.js";
 
 const app = express();
 app.use(cookieParser());
@@ -15,10 +16,8 @@ app.use(express.json());
 // user route
 app.use("/api/user", userRoute);
 
-// authorization testing route
-app.get("/", authMiddleware, (req, res) => {
-  res.json({ hello: "authorized" });
-});
+// poll route
+app.use("/api/poll", authMiddleware, pollRoute);
 
 // error handler middleware
 app.use(errorMiddlware);

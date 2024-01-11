@@ -40,7 +40,7 @@ export const loginUser = async ({ username, password }) => {
     if (validUser) {
       if (validUser.password.trim() === password.trim()) {
         // generating the jwt accessToken and refreshToken
-        console.log(validUser);
+
         const { accessToken, refreshToken } = generateToken(
           validUser.username,
           validUser._id

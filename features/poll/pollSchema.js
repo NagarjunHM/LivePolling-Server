@@ -12,6 +12,7 @@ const pollSchema = new mongoose.Schema({
   correctAnswer: {
     type: Number,
   },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 
 const pollModel = mongoose.model("Poll", pollSchema);
