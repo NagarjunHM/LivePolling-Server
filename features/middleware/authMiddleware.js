@@ -1,27 +1,25 @@
 import jwt from "jsonwebtoken";
 
 import { customError } from "./errorHandlerMiddleware.js";
-import userModel from "../user/userSchema.js";
 
-export const authMiddleware = async (req, res, next) => {
-  const token = req.cookies.token;
+export const authMiddleware = (req, res, next) => {
+  const token = req.cookies.accessToken;
 
   if (!token) {
-    return next(new customError(401, "Unauthorized - Missing token"));
+    return next(new customError(401, "Unauthorized - missing access token"));
   }
 
   try {
-    const { username } = await jwt.verify(token, process.env.TOKEN_SCRETE);
+    const { username, id } = jwt.verify(token, process.env.TOKEN_SCRETE);
 
-    const validUser = await userModel.findOne({ username });
-
-    if (validUser.token.includes(token)) {
+    if (id) {
       req.username = username;
+      req.id = id;
       next();
     } else {
-      throw new customError(401, "Unauthorized - token expired");
+      throw new customError(401, "Unauthorized - access token expired");
     }
   } catch (err) {
-    next(err);
+    throw new customError(401, "Unauthorized - access token expired");
   }
 };
