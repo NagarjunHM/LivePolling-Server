@@ -9,8 +9,9 @@ import { customError } from "../middleware/errorHandlerMiddleware.js";
 // register new user
 export const registerUserCont = async (req, res, next) => {
   try {
-    await registerUser(req.body);
-    res.status(200).json({ message: "user registered successfully" });
+    const { name, email, password } = req.body;
+    await registerUser(name, email, password);
+    res.status(201).json({ message: "user registered successfully" });
   } catch (err) {
     next(err);
   }
@@ -19,11 +20,17 @@ export const registerUserCont = async (req, res, next) => {
 // login user
 export const loginUserCont = async (req, res, next) => {
   try {
-    const { status, msg } = await loginUser(req.body);
+    if (!req.body.email || !req.body.password) {
+      throw new customError(400, "email and password in required");
+    }
+
+    const { status, msg, refreshToken } = await loginUser(
+      req.body.email,
+      req.body.password
+    );
 
     res
-      .cookie("accessToken", msg.accessToken, { httpOnly: true })
-      .cookie("refreshToken", msg.refreshToken, { httpOnly: true })
+      .cookie("refreshToken", refreshToken, { httpOnly: true })
       .status(status)
       .json(msg);
   } catch (err) {
@@ -36,11 +43,7 @@ export const logoutUserCont = async (req, res, next) => {
   try {
     const { status, msg } = await logoutUser(req.id);
 
-    res
-      .clearCookie("accessToken")
-      .clearCookie("refreshToken")
-      .status(status)
-      .json(msg);
+    res.clearCookie("refreshToken").status(status).json(msg);
   } catch (err) {
     next(err);
   }
@@ -58,8 +61,7 @@ export const generateNewAccessToken = async (req, res, next) => {
     const { status, msg } = await storeRefreshToken(refreshToken);
 
     res
-      .cookie("accessToken", msg.accessToken, { httpOnly: true })
-      .cookie("refreshToken", msg.refreshToken, { httpOnly: true })
+      .cookie("refreshToken", refreshToken, { httpOnly: true })
       .status(status)
       .json(msg);
   } catch (err) {

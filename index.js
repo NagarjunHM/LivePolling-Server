@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 dotenv.config();
 
 import connectDB from "./connectDB.js";
@@ -10,6 +11,7 @@ import { authMiddleware } from "./features/middleware/authMiddleware.js";
 import pollRoute from "./features/poll/pollRouter.js";
 
 const app = express();
+app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 
