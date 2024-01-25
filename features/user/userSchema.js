@@ -14,15 +14,14 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
-    unique: true,
+    required: [true, "Email is required"],
+    unique: [true, "Email already exists"],
     validate: { validator: validateEmail, message: "Invalid email format." },
   },
   password: {
     type: String,
     required: true,
   },
-  refreshToken: { type: String },
   polls: [{ type: mongoose.Schema.Types.ObjectId, ref: "Poll" }],
 });
 

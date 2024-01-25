@@ -1,27 +1,36 @@
 import jwt from "jsonwebtoken";
 
 import { customError } from "./errorHandlerMiddleware.js";
+import { checkToken } from "../token/tokenRepository.js";
+import userModel from "../user/userSchema.js";
 
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
   if (!token) {
-    return next(new customError(401, "Unauthorized - missing access token"));
+    return next(new customError(401, "Unauthorized - missing token"));
+  }
+
+  const notValidToken = await checkToken(token);
+
+  console.log(notValidToken);
+
+  if (notValidToken) {
+    return next(new customError(403, "invalid token"));
   }
 
   try {
-    const { id, name, email } = jwt.verify(token, process.env.TOKEN_SCRETE);
+    const { name, email } = jwt.verify(token, process.env.TOKEN_SCRETE);
 
-    if (id) {
-      req.id = id;
-      req.name = name;
-      req.email = email;
-      req.token = token;
-      next();
-    } else {
-      throw new customError(401, "Unauthorized - access token expired");
-    }
+    const validUser = await userModel.findOne({ email });
+
+    req.id = validUser._id;
+    req.email = validUser.email;
+    req.name = validUser.name;
+    req.token = token;
+
+    next();
   } catch (err) {
-    throw new customError(401, "Invalid token");
+    throw err;
   }
 };

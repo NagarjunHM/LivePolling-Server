@@ -2,29 +2,23 @@ import userModel from "./userSchema.js";
 import { customError } from "../middleware/errorHandlerMiddleware.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { addRevokedToken } from "../token/tokenRepository.js";
 
 // generate new accessToken and refreshToken
-const generateToken = (id, name, email) => {
-  const accessTokenExpiresIn = "10m";
-  const refreshTokenExpiresIn = "1d";
+const generateToken = (name, email) => {
   try {
-    const accessToken = jwt.sign(
+    const token = jwt.sign(
       {
-        id,
         name,
         email,
       },
       process.env.TOKEN_SCRETE,
       {
-        expiresIn: accessTokenExpiresIn,
+        expiresIn: "1d",
       }
     );
 
-    const refreshToken = jwt.sign({ id }, process.env.TOKEN_SCRETE, {
-      expiresIn: refreshTokenExpiresIn,
-    });
-
-    return { accessToken, refreshToken };
+    return token;
   } catch (err) {
     throw new customError(500, err);
   }
@@ -55,7 +49,11 @@ export const registerUser = async (name, email, password) => {
     const newUser = new userModel({ name, email, password: hash });
     await newUser.save();
   } catch (err) {
-    throw new customError(400, err);
+    if (err.code == 11000) {
+      throw new customError(400, "Email already exists");
+    } else {
+      throw err;
+    }
   }
 };
 
@@ -68,20 +66,15 @@ export const loginUser = async (email, password) => {
       if (await bcrypt.compare(password, validUser.password)) {
         // generating the jwt accessToken and refreshToken
 
-        const { accessToken, refreshToken } = generateToken(
-          validUser._id,
-          validUser.name,
-          validUser.email
-        );
-
-        // saving the refreshToken in the userModel
-        validUser.refreshToken = refreshToken;
-        await validUser.save();
+        const token = generateToken(validUser.name, validUser.email);
 
         return {
           status: 200,
-          msg: { msg: "user login successfull", accessToken },
-          refreshToken,
+          msg: {
+            msg: "user login successfull",
+            email: validUser.email,
+            token,
+          },
         };
       }
       // password does not match
@@ -94,54 +87,18 @@ export const loginUser = async (email, password) => {
 };
 
 // logout user
-export const logoutUser = async (id) => {
+export const logoutUser = async (id, token) => {
   try {
     const user = await userModel.findById(id);
 
     if (user) {
-      user.refreshToken = "";
-      await user.save();
-
-      return { status: 200, msg: "logout successful" };
+      const result = await addRevokedToken(token);
+      if (result) {
+        return { status: 200, msg: { msg: "logout successful" } };
+      }
     } else {
       throw new customError("404", "user not found");
     }
-  } catch (err) {
-    throw err;
-  }
-};
-
-// genearate new access token and store new refresh token
-export const storeRefreshToken = async (rToken) => {
-  try {
-    const { id } = jwt.verify(rToken, process.env.TOKEN_SCRETE);
-
-    if (!id) {
-      throw new customError(404, "user not found");
-    }
-
-    // checking user in database
-    const validUser = await userModel.findById(id);
-
-    if (!validUser) {
-      throw new customError(404, "user not found");
-    }
-
-    const { accessToken, refreshToken } = generateToken(
-      validUser._id,
-      validUser.name,
-      validUser.email
-    );
-
-    // saving the refreshed token into database
-    validUser.refreshToken = refreshToken;
-    await validUser.save();
-
-    return {
-      status: 200,
-      msg: { msg: "token refreshed", accessToken },
-      refreshToken,
-    };
   } catch (err) {
     throw err;
   }
