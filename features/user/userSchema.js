@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 // email validator
 const validateEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
   return emailRegex.test(email);
 };
 
@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, "Email is required"],
-    unique: [true, "Email already exists"],
+    unique: true,
     validate: { validator: validateEmail, message: "Invalid email format." },
   },
   password: {

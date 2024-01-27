@@ -48,11 +48,16 @@ export const registerUser = async (name, email, password) => {
     // Saving the hashPassword into the database
     const newUser = new userModel({ name, email, password: hash });
     await newUser.save();
+
+    return {
+      status: 201,
+      msg: "user created successfull",
+    };
   } catch (err) {
     if (err.code == 11000) {
       throw new customError(400, "Email already exists");
     } else {
-      throw err;
+      throw new customError(400, err.message);
     }
   }
 };

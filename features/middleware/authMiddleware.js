@@ -13,8 +13,6 @@ export const authMiddleware = async (req, res, next) => {
 
   const notValidToken = await checkToken(token);
 
-  console.log(notValidToken);
-
   if (notValidToken) {
     return next(new customError(403, "invalid token"));
   }
@@ -31,6 +29,11 @@ export const authMiddleware = async (req, res, next) => {
 
     next();
   } catch (err) {
-    throw err;
+    if (err.name === "TokenExpiredError") {
+      return next(new customError(401, "Token has expired"));
+    }
+
+    // Handle other errors here
+    return next(new customError(500, "Internal Server Error"));
   }
 };

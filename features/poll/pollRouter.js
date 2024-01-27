@@ -5,7 +5,6 @@ import {
   getAllPollCont,
   getPollDetailsCont,
 } from "./pollController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const pollRoute = express.Router();
 

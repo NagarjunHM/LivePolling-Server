@@ -8,11 +8,11 @@ import {
 // create new poll
 export const createPollCont = async (req, res, next) => {
   try {
-    const { question, options, correctAnswer } = req.body;
+    const { roomId, roomName, questions } = req.body;
     const { status, msg } = await createPoll(
-      question,
-      options,
-      correctAnswer,
+      roomId,
+      roomName,
+      questions,
       req.id
     );
     res.status(status).json(msg);

@@ -3,13 +3,13 @@ import userModel from "../user/userSchema.js";
 import { customError } from "../middleware/errorHandlerMiddleware.js";
 
 // create new poll
-export const createPoll = async (question, options, correctAnswer, user) => {
+export const createPoll = async (roomId, roomName, questions, user) => {
   try {
-    if (question && options && correctAnswer) {
+    if (roomId && roomName && questions && user) {
       const newPollData = new pollModel({
-        question,
-        options,
-        correctAnswer,
+        roomId,
+        roomName,
+        questions,
         user,
       });
       await newPollData.save();
@@ -24,6 +24,7 @@ export const createPoll = async (question, options, correctAnswer, user) => {
 
         loggedUser.polls.push(newPollData._id);
         await loggedUser.save();
+        
         return { status: 200, msg: { msg: "poll saved", poll: newPollData } };
       } else {
         throw new customError(400, "failed to store poll");

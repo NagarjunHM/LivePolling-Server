@@ -15,7 +15,6 @@ export const addRevokedToken = async (token) => {
 export const checkToken = async (token) => {
   try {
     const revokedToken = await tokenModel.findOne({ token });
-    console.log(revokedToken);
     return !!revokedToken;
   } catch (err) {
     throw err;

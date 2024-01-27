@@ -12,7 +12,7 @@ export const errorMiddlware = (err, req, res, next) => {
       " error status code : " + err.status,
       " error message : " + err.message
     );
-    return res.status(err.status).json({ error: err.message });
+    return res.status(err.status).json(err.message);
   }
   console.log(
     "unhandledError :" +
@@ -23,5 +23,5 @@ export const errorMiddlware = (err, req, res, next) => {
       " | error message - " +
       err.message
   );
-  res.status(500).json({ error: "Internal server error" });
+  res.status(500).json("Internal server error");
 };
