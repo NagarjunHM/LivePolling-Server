@@ -10,7 +10,7 @@ const pollRoute = express.Router();
 
 pollRoute.post("/", createPollCont);
 pollRoute.get("/", getAllPollCont);
-pollRoute.get("/:id", getPollDetailsCont);
-pollRoute.delete("/:id", deletePollCont);
+pollRoute.get("/:roomId", getPollDetailsCont);
+pollRoute.delete("/:roomId", deletePollCont);
 
 export default pollRoute;

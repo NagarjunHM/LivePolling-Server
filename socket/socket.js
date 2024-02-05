@@ -1,45 +1,51 @@
 import { io } from "../index.js";
+import { updateUserVotes } from "../features/poll/pollRespository.js";
+
+const liveRooms = new Set();
 
 export const handleSocketConnection = (socket) => {
-  console.log("user connected");
-
-  let allQuestion = [];
+  console.log("User connected");
 
   socket.on("createRoom", (roomId) => {
     socket.join(roomId);
-    console.log(`room created ${roomId}`);
+    console.log(`Room created: ${roomId}`);
   });
 
   socket.on("joinRoom", (room) => {
     socket.join(room);
-    console.log(`user joined a ${room}`);
+    console.log(`User joined room: ${room}`);
   });
 
   socket.on("createPoll", (data) => {
-    // broadcast to all connected clients in the room
-    allQuestion = data.questions;
-    io.to(data.room).emit("sendPoll", data.questions);
+    liveRooms.add(data.roomId);
+    io.to(data.roomId).emit("sendPoll", data.questions);
   });
 
-  socket.on("userAnswer", (question, userAnswer, roomId) => {
-    userAnswer.forEach((poll) => {
-      if (
-        question[poll.pollIndex] &&
-        Array.isArray(question[poll.pollIndex].usersAnswer)
-      ) {
-        question[poll.pollIndex].usersAnswer.push(poll.optionIndex);
+  socket.on("userAnswer", async (userAnswer, roomId) => {
+    if (liveRooms.has(roomId)) {
+      try {
+        await updateUserVotes(roomId, userAnswer);
+        io.to(roomId).emit("updatedWithUserAns", { reload: true });
+        socket.emit("thankYou", "Thank you for your response");
+        socket.leave(roomId);
+      } catch (err) {
+        console.error("Error updating user votes:", err.message);
       }
-    });
+    } else {
+      console.log(`Room ${roomId} is not live. Ignoring user answer.`);
+    }
+  });
 
-    console.log(question);
-    // Now, question contains updated usersAnswer arrays
-    // You can emit this updated question to the room or perform further actions
-
-    // For example, emitting the updated question to the room
-    io.to(roomId).emit("votedPoll", question);
+  socket.on("closeRoom", (roomId) => {
+    io.to(roomId).emit(
+      "closingRoom",
+      "Presenter has stopped polling. You cannot respond anymore."
+    );
+    liveRooms.delete(roomId);
+    console.log(`Room ${roomId} closed and removed from live rooms.`);
   });
 
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    console.log("User disconnected");
   });
 };

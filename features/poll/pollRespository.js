@@ -3,37 +3,46 @@ import userModel from "../user/userSchema.js";
 import { customError } from "../middleware/errorHandlerMiddleware.js";
 
 // create new poll
-export const createPoll = async (roomId, roomName, questions, user) => {
+export const createPoll = async (
+  roomId,
+  roomName,
+  roomDesc,
+  questions,
+  user
+) => {
   try {
-    if (roomId && roomName && questions && user) {
-      const newPollData = new pollModel({
-        roomId,
-        roomName,
-        questions,
-        user,
-      });
-      await newPollData.save();
+    const newPollData = new pollModel({
+      roomId,
+      roomName,
+      roomDesc,
+      questions,
+      user,
+    });
 
-      if (newPollData) {
-        //   saving the poll refrence in the user model
-        const loggedUser = await userModel.findById(user);
-
-        if (!loggedUser) {
-          throw new customError(400, "user not found");
-        }
-
-        loggedUser.polls.push(newPollData._id);
-        await loggedUser.save();
-        
-        return { status: 200, msg: { msg: "poll saved", poll: newPollData } };
-      } else {
-        throw new customError(400, "failed to store poll");
+    questions.map((question) => {
+      if (question === "" || question.options.length < 2) {
+        throw new customError(
+          400,
+          "question cannot be null | there should be atleast 2 options"
+        );
       }
+    });
+    await newPollData.save();
+    console.log(newPollData);
+    if (newPollData) {
+      const loggedUser = await userModel.findById(user);
+
+      if (!loggedUser) {
+        throw new customError(400, "user not found");
+      }
+
+      // saving the poll reference to the user model
+      loggedUser.polls.push(newPollData._id);
+      await loggedUser.save();
+
+      return { status: 200, msg: { msg: "poll saved", poll: newPollData } };
     } else {
-      throw new customError(
-        400,
-        "question, options, correctAnswer, all are required fields"
-      );
+      throw new customError(400, "failed to store poll");
     }
   } catch (err) {
     throw err;
@@ -48,7 +57,7 @@ export const getAllPoll = async (user) => {
       if (allPolls.length > 0) {
         return { status: 200, msg: allPolls };
       } else {
-        return { status: 200, msg: "no polls found" };
+        return { status: 200, msg: [] };
       }
     } else {
       throw new customError(404, "polls not present");
@@ -59,9 +68,9 @@ export const getAllPoll = async (user) => {
 };
 
 // get specific poll details
-export const getPollDetails = async (user, pollId) => {
+export const getPollDetails = async (user, roomId) => {
   try {
-    const pollDetails = await pollModel.findOne({ user, _id: pollId });
+    const pollDetails = await pollModel.findOne({ user, roomId });
 
     if (pollDetails) {
       return { status: 200, msg: pollDetails };
@@ -74,9 +83,9 @@ export const getPollDetails = async (user, pollId) => {
 };
 
 // delete a specific poll
-export const deletePoll = async (user, pollId) => {
+export const deletePoll = async (user, roomId) => {
   try {
-    const deletedPoll = await pollModel.findOneAndDelete({ user, _id: pollId });
+    const deletedPoll = await pollModel.findOneAndDelete({ user, roomId });
 
     if (deletedPoll) {
       const user = await userModel.findById(deletedPoll.user);
@@ -89,6 +98,37 @@ export const deletePoll = async (user, pollId) => {
     } else {
       throw new customError(404, "poll not found");
     }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// update the schema with participants vote
+export const updateUserVotes = async (roomId, userAnswer) => {
+  try {
+    const pollDetails = await pollModel.findOne({ roomId });
+
+    // Iterate through userAnswer and update votes
+    userAnswer.forEach((ans) => {
+      const { pollIndex, optionIndex } = ans;
+
+      // Update userAnswer for the corresponding question
+      pollDetails.questions[pollIndex].userAnswer.push(optionIndex);
+
+      // Update votes based on userAnswer
+      const optionKey = optionIndex.toString();
+      const votesMap = pollDetails.questions[pollIndex].votes || new Map();
+
+      votesMap.set(optionKey, (votesMap.get(optionKey) || 0) + 1);
+
+      // Save the updated votes Map to the question
+      pollDetails.questions[pollIndex].votes = votesMap;
+    });
+
+    // Save the updated pollDetails to the database
+    const updatedPollDetails = await pollDetails.save();
+
+    return updatedPollDetails;
   } catch (err) {
     throw err;
   }

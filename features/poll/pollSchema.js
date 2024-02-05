@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 
 const pollSchema = new mongoose.Schema({
-  roomId: { type: String },
-  roomName: { type: String },
+  roomId: { type: String, required: true, unique: true },
+  roomName: { type: String, required: true },
+  roomDesc: { type: String },
   questions: [
     {
       question: { type: String, default: "" },
