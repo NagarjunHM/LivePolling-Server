@@ -7,7 +7,7 @@ import userModel from "../user/userSchema.js";
 export const authMiddleware = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return next(new customError(401, "Unauthorized - missing token"));
+    return next(new customError(403, "Unauthorized - missing token"));
   }
 
   const notValidToken = await checkToken(token);
@@ -29,7 +29,7 @@ export const authMiddleware = async (req, res, next) => {
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {
-      return next(new customError(401, "Token has expired"));
+      return next(new customError(403, "Token has expired"));
     }
 
     // Handle other errors here

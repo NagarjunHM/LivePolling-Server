@@ -18,7 +18,11 @@ export const handleSocketConnection = (socket) => {
 
   socket.on("createPoll", (data) => {
     liveRooms.add(data.roomId);
-    io.to(data.roomId).emit("sendPoll", data.questions);
+    const questions = data.questions?.map(({ question, options }) => ({
+      question,
+      options,
+    }));
+    io.to(data.roomId).emit("sendPoll", questions);
   });
 
   socket.on("userAnswer", async (userAnswer, roomId) => {
