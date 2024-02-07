@@ -14,7 +14,7 @@ const generateToken = (name, email) => {
       },
       process.env.TOKEN_SCRETE,
       {
-        expiresIn: "1m",
+        expiresIn: "1d",
       }
     );
 
