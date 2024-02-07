@@ -40,6 +40,10 @@ io.on("connection", handleSocketConnection);
 app.use("/api/user", userRoute);
 app.use("/api/poll", authMiddleware, pollRoute);
 
+app.get("/", (req, res) => {
+  res.send("welcome to LivePolling");
+});
+
 // Error handler middleware
 app.use(errorMiddlware);
 
