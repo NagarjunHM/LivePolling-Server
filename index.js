@@ -28,7 +28,7 @@ const corsOptions = {
 app.use(cors({ ...corsOptions, credentials: true }));
 
 export const io = new Server(server, {
-  cors: { origin: "https://livepollingclient.onrender.com" },
+  cors: { origin: "https://livepollingclient.onrender.com", credentials: true },
 });
 
 // end cors setup
