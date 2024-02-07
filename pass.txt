@@ -1,3 +1,0 @@
-username : testdemotest31
-password : lRp2RnzuTqCu5x2H
-accesslink : mongodb+srv://testdemotest31:lRp2RnzuTqCu5x2H@livepolling1.bpyfsie.mongodb.net/?retryWrites=true&w=majority
