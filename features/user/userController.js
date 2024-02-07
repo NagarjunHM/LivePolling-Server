@@ -5,7 +5,7 @@ import { customError } from "../middleware/errorHandlerMiddleware.js";
 export const registerUserCont = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
-
+    // console.log(name, email, password);
     const { status, msg } = await registerUser(name, email, password);
     res.status(status).json(msg);
   } catch (err) {

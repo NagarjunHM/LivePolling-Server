@@ -28,7 +28,7 @@ export const createPoll = async (
       }
     });
     await newPollData.save();
-    console.log(newPollData);
+    // console.log(newPollData);
     if (newPollData) {
       const loggedUser = await userModel.findById(user);
 

@@ -36,7 +36,7 @@ export const handleSocketConnection = (socket) => {
         console.error("Error updating user votes:", err.message);
       }
     } else {
-      console.log(`Room ${roomId} is not live. Ignoring user answer.`);
+      // console.log(`Room ${roomId} is not live. Ignoring user answer.`);
     }
   });
 
@@ -46,7 +46,7 @@ export const handleSocketConnection = (socket) => {
       "Presenter has stopped polling. You cannot respond anymore."
     );
     liveRooms.delete(roomId);
-    console.log(`Room ${roomId} closed and removed from live rooms.`);
+    // console.log(`Room ${roomId} closed and removed from live rooms.`);
   });
 
   socket.on("disconnect", () => {

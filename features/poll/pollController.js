@@ -20,10 +20,7 @@ export const createPollCont = async (req, res, next) => {
     const filteredQuestions = questions.filter((question) => {
       // Check if question is not null and not empty
       if (!question.question || question.question.trim() === "") {
-        throw new customError(
-          400,
-          "Each question must have a non-null and non-empty value"
-        );
+        throw new customError(400, "question must not be null");
       }
 
       // Check if options.length is at least 2
