@@ -21,14 +21,14 @@ app.use(express.json());
 
 // cors setup
 const corsOptions = {
-  origin: "*",
+  origin: "https://livepollingclient.onrender.com",
   methods: ["GET", "POST", "DELETE"],
 };
 
 app.use(cors({ ...corsOptions, credentials: true }));
 
 export const io = new Server(server, {
-  cors: corsOptions,
+  cors: { origin: "https://livepollingclient.onrender.com" },
 });
 
 // end cors setup
