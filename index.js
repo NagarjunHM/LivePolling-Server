@@ -25,14 +25,13 @@ const corsOptions = {
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
 };
-
+app.use(cors({ ...corsOptions, credentials: true }));
 export const io = new Server(server, {
   cors: {
     corsOptions,
   },
 });
 
-app.use(cors({ ...corsOptions, credentials: true }));
 // end cors setup
 
 io.on("connection", handleSocketConnection);
