@@ -24,6 +24,5 @@ LivePolling provides a secure user authentication system with login and registra
 - Express.js
 - MongoDB
 - Socket.io
-- React js
 
 # Thank you
